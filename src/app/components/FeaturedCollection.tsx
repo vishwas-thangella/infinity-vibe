@@ -4,6 +4,7 @@ import { Heart } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../../firebase/client';
+import { useWishlist } from '../contexts/WishlistContext';
 
 interface Product {
   id: string;
@@ -18,9 +19,9 @@ export function FeaturedCollection() {
   const navigate = useNavigate();
   const [products, setProducts] = useState<Product[]>([]);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
-  const [likedItems, setLikedItems] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { isInWishlist, toggleWishlist } = useWishlist();
 
   useEffect(() => {
     const fetchFeatured = async () => {
@@ -48,16 +49,6 @@ export function FeaturedCollection() {
   }, []);
 
   const featuredProducts = products.slice(0, 4);
-
-  const toggleLike = (id: string) => {
-    const newLiked = new Set(likedItems);
-    if (newLiked.has(id)) {
-      newLiked.delete(id);
-    } else {
-      newLiked.add(id);
-    }
-    setLikedItems(newLiked);
-  };
 
   return (
     <section className="py-24 bg-black">
@@ -112,14 +103,14 @@ export function FeaturedCollection() {
               {/* Wishlist Button */}
               <motion.button
                 className="absolute top-4 right-4 z-10 bg-black/50 backdrop-blur-sm p-2 rounded-full"
-                onClick={() => toggleLike(product.id)}
+                onClick={() => toggleWishlist(product.id)}
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
               >
                 <Heart
                   size={20}
                   className={`transition-colors ${
-                    likedItems.has(product.id) ? 'fill-white text-white' : 'text-white'
+                    isInWishlist(product.id) ? 'fill-white text-white' : 'text-white'
                   }`}
                 />
               </motion.button>
@@ -152,11 +143,11 @@ export function FeaturedCollection() {
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    toggleLike(product.id);
+                    toggleWishlist(product.id);
                   }}
                   className="mt-1 w-full border border-white/40 text-[10px] tracking-[0.2em] py-2 hover:bg-white hover:text-black transition-colors"
                 >
-                  {likedItems.has(product.id) ? 'REMOVE FROM WISHLIST' : 'ADD TO WISHLIST'}
+                  {isInWishlist(product.id) ? 'REMOVE FROM WISHLIST' : 'ADD TO WISHLIST'}
                 </button>
               </motion.div>
             </motion.div>

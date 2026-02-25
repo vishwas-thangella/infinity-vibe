@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { Heart } from 'lucide-react';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../../firebase/client';
+import { useWishlist } from '../contexts/WishlistContext';
 
 interface Product {
   id: string;
@@ -16,10 +17,10 @@ interface Product {
 export default function AllProducts() {
   const [products, setProducts] = useState<Product[]>([]);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
-  const [likedItems, setLikedItems] = useState<Set<string>>(new Set());
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { isInWishlist, toggleWishlist } = useWishlist();
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -55,16 +56,6 @@ export default function AllProducts() {
   const filteredProducts = selectedCategory === 'All' 
     ? products 
     : products.filter(p => p.category === selectedCategory);
-
-  const toggleLike = (id: string) => {
-    const newLiked = new Set(likedItems);
-    if (newLiked.has(id)) {
-      newLiked.delete(id);
-    } else {
-      newLiked.add(id);
-    }
-    setLikedItems(newLiked);
-  };
 
   return (
     <div className="bg-black pt-32 pb-24">
@@ -139,7 +130,7 @@ export default function AllProducts() {
                 className="absolute top-4 right-4 z-10 bg-black/50 backdrop-blur-md p-2 rounded-full border border-white/10"
                 onClick={(e) => {
                   e.stopPropagation();
-                  toggleLike(product.id);
+                  toggleWishlist(product.id);
                 }}
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
@@ -147,7 +138,7 @@ export default function AllProducts() {
                 <Heart
                   size={18}
                   className={`transition-colors ${
-                    likedItems.has(product.id) ? 'fill-white text-white' : 'text-white'
+                    isInWishlist(product.id) ? 'fill-white text-white' : 'text-white'
                   }`}
                 />
               </motion.button>
@@ -192,11 +183,11 @@ export default function AllProducts() {
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    toggleLike(product.id);
+                    toggleWishlist(product.id);
                   }}
                   className="mt-1 w-full border border-white/30 text-[10px] tracking-[0.2em] py-2 hover:bg-white hover:text-black transition-colors"
                 >
-                  {likedItems.has(product.id) ? 'REMOVE FROM WISHLIST' : 'ADD TO WISHLIST'}
+                  {isInWishlist(product.id) ? 'REMOVE FROM WISHLIST' : 'ADD TO WISHLIST'}
                 </button>
               </div>
             </motion.div>

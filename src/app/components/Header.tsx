@@ -3,11 +3,13 @@ import { useState, useEffect } from "react";
 import { ShoppingBag, Menu, X, Heart, Search } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { Link, useNavigate } from "react-router";
+import { useWishlist } from "../contexts/WishlistContext";
 // @ts-ignore
 import Logo from "../../assets/logo.png";
 
 export function Header() {
   const navigate = useNavigate();
+  const { wishlist } = useWishlist();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -83,8 +85,14 @@ export function Header() {
               className="hover:text-gray-400 transition-colors relative"
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.95 }}
+              onClick={() => navigate('/wishlist')}
             >
               <Heart size={20} />
+              {wishlist.size > 0 && (
+                <span className="absolute -top-2 -right-2 bg-white text-black text-xs w-5 h-5 rounded-full flex items-center justify-center">
+                  {wishlist.size}
+                </span>
+              )}
             </motion.button>
             <motion.button
               className="hover:text-gray-400 transition-colors relative"
